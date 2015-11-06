@@ -42,20 +42,13 @@ object Utils {
     req.post(payload)
   }
 
-  def parse(str: String): Option[List[Atomic]] = {
-    Try {
+  def parse(str: String): Future[List[Atomic]] = {
+    Future {
       val parsedStr = Json.parse(str)
       val textValue = (parsedStr \ "value").as[String]
       val parsedTextValue = Json.parse(textValue)
-      val table = (parsedTextValue \ "Table").asOpt[List[JsValue]]
-      for(someList <- table) yield {
-        for(item <- someList) yield Atomic((item \ "Value").as[String].trim.toInt, (item \ "Text").as[String])
-      }
-    } match {
-      case Success(value) => value
-      case Failure(th) =>
-        th.printStackTrace()
-        None
+      val someList = (parsedTextValue \ "Table").as[List[JsValue]]
+      for(item <- someList) yield Atomic((item \ "Value").as[String].trim.toInt, (item \ "Text").as[String])
     }
   }
 }
